@@ -13,6 +13,7 @@ import { ConnectionStatus } from "@/components/connection-status";
 import { NowPlaying } from "@/components/now-playing";
 import { QueueList } from "@/components/queue-list";
 import { SearchSong } from "@/components/search-song";
+import { SkipSongButton } from "@/components/skip-song-button";
 import { useQueue } from "@/hooks/use-queue";
 import { useRoom } from "@/hooks/use-room";
 import { clearGuestSession, saveGuestSession, useGuestSession } from "@/hooks/use-session";
@@ -165,7 +166,19 @@ function GuestRemote({ room, session }: { room: Room; session: GuestSession }) {
             Room {room.code}
           </p>
         </div>
-        <ConnectionStatus status={status} />
+        <div className="flex items-center gap-3">
+          <ConnectionStatus status={status} />
+          {current && (
+            // Keyed by song so an open dialog closes when the song changes.
+            <SkipSongButton
+              key={current.id}
+              code={room.code}
+              guestToken={session.guestToken}
+              song={current}
+              onSessionExpired={leaveRoom}
+            />
+          )}
+        </div>
       </header>
 
       <main className="flex-1 px-4 pt-4 pb-24">

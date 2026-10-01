@@ -139,7 +139,9 @@ No extra servers are needed. Supabase Realtime does the live updates.
   That makes double calls and skip-vs-ended races harmless.
 - **Host play/pause/replay** update `rooms.playback_state` / `replay_nonce`.
   The TV sees the room update and controls its player. **Skip** advances the
-  queue on the server, and the TV loads the new song.
+  queue on the server, and the TV loads the new song. Any joined guest can
+  also tap **Next** on their phone (after a confirmation dialog); they send the
+  id of the song they saw, so double taps never skip two songs.
 - **Removing songs** is a soft delete (`status = 'REMOVED'`), so every client
   gets a normal Realtime UPDATE event.
 
@@ -170,7 +172,7 @@ play automatically.
 | `DELETE /api/rooms/[code]/queue`      | host          | Clear waiting songs              |
 | `DELETE /api/rooms/[code]/queue/[id]` | host or owner | Remove a waiting song            |
 | `POST /api/rooms/[code]/next`         | host (TV)     | Song ended/failed → next song    |
-| `POST /api/rooms/[code]/skip`         | host          | Skip current song                |
+| `POST /api/rooms/[code]/skip`         | host or guest | Skip current song (guests send `{ currentId }`) |
 | `POST /api/rooms/[code]/pause`        | host          | Pause on TV                      |
 | `POST /api/rooms/[code]/play`         | host          | Resume on TV                     |
 | `POST /api/rooms/[code]/replay`       | host          | Restart current song             |
