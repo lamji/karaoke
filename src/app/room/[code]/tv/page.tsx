@@ -108,10 +108,11 @@ function TvScreen({ room, hostToken }: { room: Room; hostToken: string | null })
         </p>
       )}
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="flex min-h-0 flex-col gap-6">
-          {/* Keep the 16:9 player short enough to leave room for "Now playing". */}
-          <div className="relative w-full lg:max-w-[calc((100dvh_-_16rem)*16/9)]">
+      {/* Player column is only as wide as the 16:9 video that fits the screen
+          height; the sidebar takes whatever width is left (no empty gap). */}
+      <div className="flex min-h-0 flex-1 flex-col gap-8 lg:flex-row">
+        <div className="flex min-h-0 flex-col gap-6 lg:w-[min(calc(100%_-_360px_-_2rem),calc((100dvh_-_16rem)*16/9))] lg:flex-none">
+          <div className="relative w-full">
             {started ? (
               <KaraokePlayer
                 songId={current?.id ?? null}
@@ -133,7 +134,7 @@ function TvScreen({ room, hostToken }: { room: Room; hostToken: string | null })
           <NowPlaying song={current} size="tv" />
         </div>
 
-        <aside className="flex min-h-0 flex-col gap-6">
+        <aside className="flex min-h-0 min-w-0 flex-col gap-6 lg:min-w-[360px] lg:flex-1">
           <div className="flex items-center gap-4 rounded-2xl border bg-card p-4">
             <QrCode url={guestUrl} size={128} />
             <div className="min-w-0">
