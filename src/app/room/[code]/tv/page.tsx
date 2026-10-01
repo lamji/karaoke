@@ -3,13 +3,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { PauseIcon, PlayIcon } from "lucide-react";
+import { PauseIcon, PlayIcon, SlidersHorizontalIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { CenteredMessage } from "@/components/centered-message";
 import { ConnectionStatus } from "@/components/connection-status";
 import { KaraokePlayer } from "@/components/karaoke-player";
-import { NowPlaying } from "@/components/now-playing";
 import { QrCode } from "@/components/qr-code";
 import { QueueList } from "@/components/queue-list";
 import { useQueue } from "@/hooks/use-queue";
@@ -91,15 +90,35 @@ function TvScreen({ room, hostToken }: { room: Room; hostToken: string | null })
   const hiddenCount = upcoming.length - visibleUpcoming.length;
 
   return (
-    <div className="flex h-dvh flex-col gap-6 overflow-hidden p-6 lg:p-8">
-      <header className="flex items-center justify-between">
-        <h1 className="text-3xl font-black tracking-wider">🎤 KARAOKE</h1>
-        <div className="flex items-center gap-6">
-          <ConnectionStatus status={status} />
-          <p className="text-3xl font-bold tracking-wider">
-            ROOM <span className="font-mono text-primary">{room.code}</span>
-          </p>
+    <div className="flex h-dvh flex-col gap-4 overflow-hidden p-4 lg:p-6">
+      <header className="flex items-center gap-6">
+        <span className="text-4xl">🎤</span>
+        <div className="min-w-0 flex-1">
+          {current ? (
+            <>
+              <p className="truncate text-2xl font-bold">{current.title}</p>
+              <p className="truncate text-lg text-muted-foreground">
+                Requested by <span className="text-foreground">{current.requested_by}</span>
+              </p>
+            </>
+          ) : (
+            <p className="text-2xl font-bold">Waiting for song requests...</p>
+          )}
         </div>
+        <ConnectionStatus status={status} />
+        <p className="shrink-0 text-2xl font-bold tracking-wider">
+          ROOM <span className="font-mono text-primary">{room.code}</span>
+        </p>
+        {hostToken && (
+          <Link
+            href={`/room/${room.code}/host`}
+            target="_blank"
+            aria-label="Open host controls"
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <SlidersHorizontalIcon className="size-6" />
+          </Link>
+        )}
       </header>
 
       {!hostToken && (
@@ -108,60 +127,39 @@ function TvScreen({ room, hostToken }: { room: Room; hostToken: string | null })
         </p>
       )}
 
-      {/* Player column is only as wide as the 16:9 video that fits the screen
-          height; the sidebar takes whatever width is left (no empty gap). */}
-      <div className="flex min-h-0 flex-1 flex-col gap-8 lg:flex-row lg:[container-type:size]">
-        <div className="flex min-h-0 flex-col gap-6 lg:w-[min(calc(100cqw_-_360px_-_2rem),calc((100cqh_-_11rem)*16/9))] lg:flex-none">
-          <div className="relative w-full">
-            {started ? (
-              <KaraokePlayer
-                songId={current?.id ?? null}
-                videoId={current?.youtube_video_id ?? null}
-                paused={room.playback_state === "PAUSED"}
-                replayNonce={room.replay_nonce}
-                onEnded={handleEnded}
-                onError={handleError}
-              />
-            ) : (
-              <StartOverlay onStart={() => setStarted(true)} canPlay={!!hostToken} />
-            )}
-            {started && current && room.playback_state === "PAUSED" && (
-              <div className="pointer-events-none absolute top-4 left-4 flex items-center gap-2 rounded-full bg-black/70 px-4 py-2 text-xl font-semibold">
-                <PauseIcon className="size-5" /> Paused
-              </div>
-            )}
-          </div>
-          <NowPlaying song={current} size="tv" />
+      {/* The player gets all the space; the side panel is a narrow column. */}
+      <div className="flex min-h-0 flex-1 flex-col gap-4 lg:flex-row lg:[container-type:size]">
+        <div className="relative w-full lg:w-[min(calc(100cqw_-_300px_-_1rem),calc(100cqh*16/9))] lg:flex-none">
+          {started ? (
+            <KaraokePlayer
+              songId={current?.id ?? null}
+              videoId={current?.youtube_video_id ?? null}
+              paused={room.playback_state === "PAUSED"}
+              replayNonce={room.replay_nonce}
+              onEnded={handleEnded}
+              onError={handleError}
+            />
+          ) : (
+            <StartOverlay onStart={() => setStarted(true)} canPlay={!!hostToken} />
+          )}
+          {started && current && room.playback_state === "PAUSED" && (
+            <div className="pointer-events-none absolute top-4 left-4 flex items-center gap-2 rounded-full bg-black/70 px-4 py-2 text-xl font-semibold">
+              <PauseIcon className="size-5" /> Paused
+            </div>
+          )}
         </div>
 
-        <aside className="flex min-h-0 min-w-0 flex-col gap-6 lg:min-w-[360px] lg:flex-1">
-          <div className="flex items-center gap-4 rounded-2xl border bg-card p-4">
-            <QrCode url={guestUrl} size={128} />
-            <div className="min-w-0">
-              <p className="text-xl font-bold">Scan to sing!</p>
-              <p className="mt-1 text-sm break-all text-muted-foreground">{guestUrl}</p>
-            </div>
-          </div>
-
-          <section className="min-h-0 flex-1 overflow-hidden">
-            <h2 className="mb-4 text-lg font-semibold tracking-widest text-primary uppercase">
+        <aside className="flex min-h-0 min-w-0 flex-col items-center gap-4 lg:min-w-[300px] lg:flex-1">
+          <QrCode url={guestUrl} size={200} />
+          <section className="min-h-0 w-full flex-1 overflow-hidden">
+            <h2 className="mb-3 text-base font-semibold tracking-widest text-primary uppercase">
               Up next
             </h2>
-            <QueueList items={visibleUpcoming} size="tv" emptyText="Add a song from your phone!" />
+            <QueueList items={visibleUpcoming} size="tv" emptyText="Scan to add a song!" />
             {hiddenCount > 0 && (
-              <p className="mt-4 text-xl text-muted-foreground">+{hiddenCount} more</p>
+              <p className="mt-3 text-lg text-muted-foreground">+{hiddenCount} more</p>
             )}
           </section>
-
-          {hostToken && (
-            <Link
-              href={`/room/${room.code}/host`}
-              target="_blank"
-              className="text-sm text-muted-foreground underline-offset-4 hover:underline"
-            >
-              Open host controls
-            </Link>
-          )}
         </aside>
       </div>
     </div>
