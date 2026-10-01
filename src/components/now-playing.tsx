@@ -22,7 +22,9 @@ export function NowPlaying({ song, size = "default", isMine = false }: NowPlayin
       </h2>
       {song ? (
         <div className={cn("mt-2", isMine && !isTv && "rounded-lg bg-primary/10 p-2")}>
-          <p className={cn("font-bold leading-tight", isTv ? "text-4xl" : "text-lg")}>
+          <p
+            className={cn("font-bold leading-tight", isTv ? "line-clamp-2 text-4xl" : "text-lg")}
+          >
             {song.title}
           </p>
           <p className={cn("text-muted-foreground", isTv ? "mt-2 text-2xl" : "text-sm")}>

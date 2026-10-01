@@ -110,8 +110,8 @@ function TvScreen({ room, hostToken }: { room: Room; hostToken: string | null })
 
       {/* Player column is only as wide as the 16:9 video that fits the screen
           height; the sidebar takes whatever width is left (no empty gap). */}
-      <div className="flex min-h-0 flex-1 flex-col gap-8 lg:flex-row">
-        <div className="flex min-h-0 flex-col gap-6 lg:w-[min(calc(100%_-_360px_-_2rem),calc((100dvh_-_16rem)*16/9))] lg:flex-none">
+      <div className="flex min-h-0 flex-1 flex-col gap-8 lg:flex-row lg:[container-type:size]">
+        <div className="flex min-h-0 flex-col gap-6 lg:w-[min(calc(100cqw_-_360px_-_2rem),calc((100cqh_-_11rem)*16/9))] lg:flex-none">
           <div className="relative w-full">
             {started ? (
               <KaraokePlayer
